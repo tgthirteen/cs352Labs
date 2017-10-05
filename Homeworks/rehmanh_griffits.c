@@ -1,3 +1,7 @@
+//Habib Rehman 
+//Trevor Griffin
+// CS352 Lab1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +23,7 @@ u_int64 getCode(int* buffer, int count) // count is the number of bytes in a fil
 }
 
 
-/*
+/*   This will be where we take user input for filename and eventually run testValidity
 
 char* getFname(){
 
@@ -28,6 +32,8 @@ char* getFname(){
 
 */
 
+
+//This will need to compare the hex code from getCode with the code from the entered filename
 char* testValidity(char* code, char* fname){
 
 	
@@ -67,10 +73,14 @@ int main()
 
       bits = (int *)malloc((filelen + 1) * sizeof(int));
       fread(bits, filelen, 1, fPointer);
-     // printf("%x\n",  &bits );
+   
+
+	  // printf("%x\n",  &bits );
 
 
-		/*
+		/* Test to print the full bit-string (moved to the getCode section)
+
+
 			for(int i = 0; i < filelen; i++){
 				printf("%d", bits[i]);
 			}
