@@ -58,7 +58,7 @@ int main()
     scanf("%s", &fName);
     //strcat(fName, _txt);
 
-    fPointer = fopen(fName, "rb");
+    fPointer = fopen(fName, "r");//removed the rb here
 
     if(fPointer == NULL)
     {
