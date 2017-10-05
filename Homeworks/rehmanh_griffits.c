@@ -1,4 +1,4 @@
-//Habib Rehman 
+//Habib Rehman
 //Trevor Griffin
 // CS352 Lab1
 
@@ -36,13 +36,14 @@ char* getFname(){
 //This will need to compare the hex code from getCode with the code from the entered filename
 char* testValidity(char* code, char* fname){
 
-	
-  return;
+
+  return 0;
 }
 
 
 int main()
 {
+  //dicks
   FILE *fPointer;
   char fName[255];
   char user_decision;
@@ -73,7 +74,7 @@ int main()
 
       bits = (int *)malloc((filelen + 1) * sizeof(int));
       fread(bits, filelen, 1, fPointer);
-   
+
 
 	  // printf("%x\n",  &bits );
 
