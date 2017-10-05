@@ -18,6 +18,23 @@ u_int64 getCode(int* buffer, int count) // count is the number of bytes in a fil
   return 0;
 }
 
+
+/*
+
+char* getFname(){
+
+
+}
+
+*/
+
+char* testValidity(char* code, char* fname){
+
+	
+  return;
+}
+
+
 int main()
 {
   FILE *fPointer;
