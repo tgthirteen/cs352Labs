@@ -5,12 +5,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 typedef unsigned short u_short;
 typedef unsigned int u_int32;
 typedef unsigned long u_int64;
 
-void getCode(char *buffer, int count) // changed return type to void
+char fName[255];
+
+char test_file[255];
+
+char user_decision;
+
+//u_int64 *buf;
+
+unsigned char *buf;
+
+u_int32 code;
+
+int filelen;
+int _again = 1;
+int notFirstTime = 0;
+
+
+u_int32 getCode(unsigned char *buffer, int count) // changed return type to void
 {
   register u_int64 total = 0;
 
@@ -18,7 +36,9 @@ void getCode(char *buffer, int count) // changed return type to void
 
   u_int32 test[32];
 
-  u_int32 tot[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  //u_int32 tot[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+  u_int32 tot = 0;
 
   //printf("The size of the char array is: %lu\n", sizeof(buffer)/sizeof(char*));
 
@@ -27,22 +47,31 @@ void getCode(char *buffer, int count) // changed return type to void
 
     tmp = (u_int32) buffer[count]; //this is already 4 bytes
 
+    tot += tmp;
+
+    if(tot > 255) //(pow(2, 32) - 1)
+    {
+      tot -= 255;//(pow(2, 32) - 1);
+    }
+
     printf("%d ", tmp);
 
-    int i;
+    printf("%d ", tot);
 
-    for(i = 32; i > 0; i--)
-    {
-      //printf("%d", !!(0x80 & (tmp << i))); // buffer[count];
+    // int i;
+    //
+    // for(i = 31; i >= 0; i--)
+    // {
+    //   //printf("%d", !!(0x80 & (tmp << i))); // buffer[count];
+    //
+    //   test[i] = !!(0x300 & (tot << i));
+    //
+    //   printf("%d", test[i]); // at this point, I have an array of all the bits that are in the byte #12
+    //
+    //   //printf("%d", tot[i]); // at this point, I have an array of all the bits that are in the byte #12
+    // }
 
-      test[i] = !!(0x80 & (tmp << i));
-
-      //tot[i] += test[i];
-
-      printf("%d", test[i]); // at this point, I have an array of all the bits that are in the byte #12
-
-      //printf("%d", tot[i]); // at this point, I have an array of all the bits that are in the byte #12
-    }
+    // printf(" %d", test[0]);
 
     printf("\n");
 
@@ -53,14 +82,34 @@ void getCode(char *buffer, int count) // changed return type to void
 		//printf("%d\n", test);
   }
 
-  printf("\n");
+  printf("%x\n", ~tot);
+
+  return ~tot;
 }
 
 //This will need to compare the hex code from getCode with the code from the entered filename
-char* testValidity(char* code, char* fname){
+void testValidity(u_int32 code, unsigned char *fname, int filelen) {
+
+u_int32 test_code;
+
+u_int32 a = 211;
+
+u_int32 b = 44;
 
 
-  return 0;
+
+test_code = getCode(fname, filelen);
+
+test_code = test_code | code;
+printf("%d\n", test_code);
+
+if(test_code == 255)
+{
+  printf("yay\n");
+}
+
+else printf("Fuck\n");
+
 }
 
 
@@ -68,12 +117,16 @@ int main()
 {
   FILE *fPointer;
   char fName[255];
+
+  char test_file[255];
+
   char user_decision;
-  char *_txt = ".txt"; //not used at the moment
 
   //u_int64 *buf;
 
-  char *buf;
+  unsigned char *buf;
+
+  u_int32 code;
 
   int filelen;
   int _again = 1;
@@ -82,6 +135,7 @@ int main()
   while(_again)
   {
     printf("Enter filename for validation: ");
+
     scanf("%s", &fName);
 
     fPointer = fopen(fName, "rb");
@@ -97,7 +151,7 @@ int main()
       filelen = ftell(fPointer);
       rewind(fPointer);
 
-      buf = (char *)malloc((filelen + 1) * sizeof(char)); //changed from int
+      buf = (unsigned char *)malloc((filelen + 1) * sizeof(unsigned char)); //changed from int
 
       //fread(&buf, sizeof(buf), 1, fPointer);
 
@@ -106,7 +160,23 @@ int main()
 
       printf("The number of bytes in the file are: %d\n", filelen);
 
-			getCode(buf, filelen);
+			code = getCode(buf, filelen);
+
+      printf("Enter filename for validation with: %x", code);
+
+      scanf("%s", &fName);
+
+      fPointer = fopen(fName, "rb");
+
+      filelen = ftell(fPointer);
+      rewind(fPointer);
+
+      free(buf);
+
+      buf = (unsigned char *)malloc((filelen + 1) * sizeof(unsigned char)); //changed from int
+      fread(buf, filelen, 1, fPointer);
+
+      testValidity(code, buf, filelen);
 
       free(buf);
 			notFirstTime = 1;
