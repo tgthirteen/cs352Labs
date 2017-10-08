@@ -10,28 +10,51 @@ typedef unsigned short u_short;
 typedef unsigned int u_int32;
 typedef unsigned long u_int64;
 
-u_int64 getCode(int* buffer, int count) // count is the number of bytes in a file
+void getCode(char *buffer, int count) // changed return type to void
 {
   register u_int64 total = 0;
 
+  u_int32 tmp;
+
+  u_int32 test[32];
+
+  u_int32 tot[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+  //printf("The size of the char array is: %lu\n", sizeof(buffer)/sizeof(char*));
+
   while(count--)
   {
-		printf("%d", buffer[count]);
+
+    tmp = (u_int32) buffer[count]; //this is already 4 bytes
+
+    printf("%d ", tmp);
+
+    int i;
+
+    for(i = 32; i > 0; i--)
+    {
+      //printf("%d", !!(0x80 & (tmp << i))); // buffer[count];
+
+      test[i] = !!(0x80 & (tmp << i));
+
+      //tot[i] += test[i];
+
+      printf("%d", test[i]); // at this point, I have an array of all the bits that are in the byte #12
+
+      //printf("%d", tot[i]); // at this point, I have an array of all the bits that are in the byte #12
+    }
+
+    printf("\n");
+
+    //lets take the count the first time this loop iterates. Count is going to be 12
+
+    //printf("The size of tmp is: %lu\n", sizeof(tmp));
+
+		//printf("%d\n", test);
   }
 
-  return 0;
+  printf("\n");
 }
-
-
-/*   This will be where we take user input for filename and eventually run testValidity
-
-char* getFname(){
-
-
-}
-
-*/
-
 
 //This will need to compare the hex code from getCode with the code from the entered filename
 char* testValidity(char* code, char* fname){
@@ -43,12 +66,15 @@ char* testValidity(char* code, char* fname){
 
 int main()
 {
-  //dicks
   FILE *fPointer;
   char fName[255];
   char user_decision;
   char *_txt = ".txt"; //not used at the moment
-  int * bits; //changed from char string[size]
+
+  //u_int64 *buf;
+
+  char *buf;
+
   int filelen;
   int _again = 1;
   int notFirstTime = 0;
@@ -57,9 +83,8 @@ int main()
   {
     printf("Enter filename for validation: ");
     scanf("%s", &fName);
-    //strcat(fName, _txt);
 
-    fPointer = fopen(fName, "r");//removed the rb here
+    fPointer = fopen(fName, "rb");
 
     if(fPointer == NULL)
     {
@@ -72,34 +97,19 @@ int main()
       filelen = ftell(fPointer);
       rewind(fPointer);
 
-      bits = (int *)malloc((filelen + 1) * sizeof(int));
-      fread(bits, filelen, 1, fPointer);
+      buf = (char *)malloc((filelen + 1) * sizeof(char)); //changed from int
 
+      //fread(&buf, sizeof(buf), 1, fPointer);
 
-	  // printf("%x\n",  &bits );
+      //read into  buf, filelen bytes, 1 time, passto fPointer
+      fread(buf, filelen, 1, fPointer);
 
+      printf("The number of bytes in the file are: %d\n", filelen);
 
-		/* Test to print the full bit-string (moved to the getCode section)
+			getCode(buf, filelen);
 
-
-			for(int i = 0; i < filelen; i++){
-				printf("%d", bits[i]);
-			}
-		*/
-
-			getCode(bits, filelen);
-
-      free(bits);
+      free(buf);
 			notFirstTime = 1;
-      // while(!feof(fPointer))
-      // {
-      //
-      //   fread(string, filelen, 1, fPointer);
-      //   printf("%u\n",  &string );
-      //
-      //   //fscanf(fPointer, "%s", &string);
-      //   //printf("%s\n", &string);
-      // }
     }
 
     if(notFirstTime)
