@@ -11,36 +11,15 @@ typedef unsigned short u_short;
 typedef unsigned int u_int32;
 typedef unsigned long u_int64;
 
-char fName[255];
-
-char test_file[255];
-
-char user_decision;
-
-//u_int64 *buf;
-
-unsigned char *buf;
-
-u_int32 code;
-
-int filelen;
-int _again = 1;
-int notFirstTime = 0;
-
-
 u_int32 getCode(unsigned char *buffer, int count) // changed return type to void
 {
-  register u_int64 total = 0;
+  //register u_int64 total = 0;
 
   u_int32 tmp;
 
   u_int32 test[32];
 
-  //u_int32 tot[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-  u_int32 tot = 0;
-
-  //printf("The size of the char array is: %lu\n", sizeof(buffer)/sizeof(char*));
+  register u_int32 tot = 0;
 
   while(count--)
   {
@@ -49,14 +28,16 @@ u_int32 getCode(unsigned char *buffer, int count) // changed return type to void
 
     tot += tmp;
 
-    if(tot > 255) //(pow(2, 32) - 1)
+    if(tot > (pow(2, 32) - 1)) //255
     {
-      tot -= 255;//(pow(2, 32) - 1);
+      tot -= (pow(2, 32) - 1); //255
     }
 
-    printf("%d ", tmp);
+    /*------test code---------*/
 
-    printf("%d ", tot);
+    //printf("%d ", tmp);
+
+    //printf("%u ", tot);
 
     // int i;
     //
@@ -71,44 +52,55 @@ u_int32 getCode(unsigned char *buffer, int count) // changed return type to void
     //   //printf("%d", tot[i]); // at this point, I have an array of all the bits that are in the byte #12
     // }
 
-    // printf(" %d", test[0]);
+		//printf("\n");
 
-    printf("\n");
-
-    //lets take the count the first time this loop iterates. Count is going to be 12
-
-    //printf("The size of tmp is: %lu\n", sizeof(tmp));
-
-		//printf("%d\n", test);
+    /*-----------------------*/
   }
-
-  printf("%x\n", ~tot);
 
   return ~tot;
 }
 
-//This will need to compare the hex code from getCode with the code from the entered filename
-void testValidity(u_int32 code, unsigned char *fname, int filelen) {
-
-u_int32 test_code;
-
-u_int32 a = 211;
-
-u_int32 b = 44;
-
-
-
-test_code = getCode(fname, filelen);
-
-test_code = test_code | code;
-printf("%d\n", test_code);
-
-if(test_code == 255)
+void testValidity(u_int32 code_to_test, char file_to_test[255])
 {
-  printf("yay\n");
-}
+  FILE* fp;
+  int len;
+  unsigned char *buf;
+  u_int32 code;
 
-else printf("Fuck\n");
+  fp = fopen(file_to_test, "rb");
+
+  if(fp == NULL)
+  {
+    printf("The file could not be found.\n");
+  }
+  else
+  {
+    fseek(fp, 0, SEEK_END);
+
+    len = ftell(fp);
+
+    rewind(fp);
+
+    buf = (unsigned char *)malloc((len + 1) * sizeof(unsigned char));
+
+    fread(buf, len, 1, fp);
+
+    code = ~getCode(buf, len);
+
+    free(buf);
+
+    //printf("The addition is: %x\n", (code_to_test | code));
+
+    if((code_to_test | code) == 0xffffffff)
+    {
+      printf("Validation: Success!\n");
+    }
+    else
+    {
+      printf("Validation: Fail\n");
+    }
+
+  }
 
 }
 
@@ -117,24 +109,17 @@ int main()
 {
   FILE *fPointer;
   char fName[255];
-
   char test_file[255];
-
   char user_decision;
-
-  //u_int64 *buf;
-
   unsigned char *buf;
-
   u_int32 code;
-
   int filelen;
   int _again = 1;
   int notFirstTime = 0;
 
   while(_again)
   {
-    printf("Enter filename for validation: ");
+    printf("Enter filename: ");
 
     scanf("%s", &fName);
 
@@ -143,71 +128,55 @@ int main()
     if(fPointer == NULL)
     {
       printf("The file could not be opened!\n");
+
       notFirstTime = 0;
     }
     else
     {
       fseek(fPointer, 0, SEEK_END);
+
       filelen = ftell(fPointer);
+
       rewind(fPointer);
 
       buf = (unsigned char *)malloc((filelen + 1) * sizeof(unsigned char)); //changed from int
 
-      //fread(&buf, sizeof(buf), 1, fPointer);
-
-      //read into  buf, filelen bytes, 1 time, passto fPointer
       fread(buf, filelen, 1, fPointer);
 
       printf("The number of bytes in the file are: %d\n", filelen);
 
-			code = getCode(buf, filelen);
+      code = getCode(buf, filelen);
 
-      printf("Enter filename for validation with: %x", code);
-
-      scanf("%s", &fName);
-
-      fPointer = fopen(fName, "rb");
-
-      filelen = ftell(fPointer);
-      rewind(fPointer);
+      printf("Calculated code: %x\n", code);
 
       free(buf);
 
-      buf = (unsigned char *)malloc((filelen + 1) * sizeof(unsigned char)); //changed from int
-      fread(buf, filelen, 1, fPointer);
+      printf("Enter filename for validation with %x: ", code);
 
-      testValidity(code, buf, filelen);
+      scanf("%s", test_file);
 
-      free(buf);
+      testValidity(code, &test_file);
+
 			notFirstTime = 1;
     }
 
     if(notFirstTime)
     {
       printf("Again? ");
+
       scanf(" %c", &user_decision);
 
       if(user_decision == 'n' || user_decision == 'N')
       {
         _again = 0;
+
         printf("Goodbye!\n");
       }
     }
 
     notFirstTime++;
-
   }
 
   fclose(fPointer); //when the fuck am i supposed to close this???
 
 }
-
-/*
-
-//use fgetc() for the actual file, but right now I am just testing the string
-while (fgetc(file) != EOF)
-{
-  count++;
-}
-
-*/
